@@ -1,61 +1,54 @@
 #include "include/GerenciadorCorrida.hpp"
 #include "include/Apostador.hpp"
+#include "include/Utils.hpp"
 #include <iostream>
+#include <thread>
 #include <vector>
 #include <string>
-#include <limits>
-#include <algorithm>
+#include <iomanip>
+#include <cctype>
 
-std::string remove_espacos(std::string str) {
-    str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
-    return str;
+void mostrarCabecalho(int saldo) {
+    Utils::clearScreen();
+    std::cout << "════════════════════════════════════════\n"
+    << "         🐕 CORRIDA DE CACHORROS 🐕\n"
+    << "════════════════════════════════════════\n"
+    << " Saldo: \033[1;33m" << saldo << " moedas\033[0m\n\n";
 }
 
 int main() {
     GerenciadorCorrida corrida;
-    Apostador jogador(100); // Começa com 100 moedas
+    Apostador jogador(100);
 
-    // Adicionar cachorros
-    corrida.adicionarCachorro(Cachorro('#', "Rex    "));
-    corrida.adicionarCachorro(Cachorro('#', "Lucky  "));
-    corrida.adicionarCachorro(Cachorro('#', "Bolt   "));
-    corrida.adicionarCachorro(Cachorro('#', "Flash  "));
-    corrida.adicionarCachorro(Cachorro('#', "Speedy "));
+    // Adicionar cachorros com nomes alinhados
+    corrida.adicionarCachorro(Cachorro('#', "Rex"));
+    corrida.adicionarCachorro(Cachorro('#', "Lucky"));
+    corrida.adicionarCachorro(Cachorro('#', "Bolt"));
+    corrida.adicionarCachorro(Cachorro('#', "Flash"));
+    corrida.adicionarCachorro(Cachorro('#', "Speedy"));
 
     while (jogador.getSaldo() > 0) {
         corrida.reset();
         jogador.resetAposta();
-
-        // Mostrar status
-        std::cout << "===== CORRIDA DE CACHORROS =====\n";
-        std::cout << "Seu saldo: " << jogador.getSaldo() << " moedas\n\n";
+        mostrarCabecalho(jogador.getSaldo());
 
         // Listar cachorros
         const auto& cachorros = corrida.getCachorros();
-        std::cout << "Cachorros disponiveis:\n";
-        for (int i = 0; i < cachorros.size(); i++) {
-            std::cout << i+1 << ". " << remove_espacos(cachorros[i].getNome()) << "\n";
+        std::cout << "  🐶 CACHORROS DISPONÍVEIS:\n";
+        for (size_t i = 0; i < cachorros.size(); ++i) {
+            std::cout << "  " << i+1 << ". " << cachorros[i].getNome() << '\n';
         }
 
         // Obter aposta
-        int escolha;
-        int valor;
+        std::cout << "\n  ➡️  Escolha um cachorro (1-" << cachorros.size() << "): ";
+        int escolha = Utils::getValidatedInt(1, cachorros.size()) - 1;
 
-        std::cout << "\nEscolha um cachorro (1-" << cachorros.size() << "): ";
-        std::cin >> escolha;
+        std::cout << "  💰 Valor da aposta: ";
+        int valor = Utils::getValidatedInt(1, jogador.getSaldo());
 
-        if (escolha < 1 || escolha > cachorros.size()) {
-            std::cout << "Escolha invalida!\n";
-            continue;
-        }
-
-        const std::string& nCachorro = cachorros[escolha-1].getNome();
-        const std::string nomeCachorro = remove_espacos(nCachorro);
-        std::cout << "Quanto quer apostar em " << nomeCachorro << "? ";
-        std::cin >> valor;
-
-        if (!jogador.apostar(valor, nomeCachorro)) {
-            std::cout << "Aposta invalida! Saldo insuficiente ou valor negativo.\n";
+        if (!jogador.apostar(valor, escolha)) {
+            std::cerr << "\n\033[1;31mERRO: Aposta inválida!\033[0m\n";
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
 
@@ -63,32 +56,26 @@ int main() {
         corrida.executar();
 
         // Processar resultados
-        const auto& ordem = corrida.getOrdemChegada();
-        std::vector<std::string> nomes;
-        for (const auto& c : cachorros) {
-            nomes.push_back(c.getNome());
-        }
+        jogador.processarResultado(corrida.getOrdemChegada());
 
-        jogador.processarResultado(ordem, nomes);
-
-        // Verificar se o jogador quer continuar
+        // Verificar game over
         if (jogador.getSaldo() <= 0) {
-            std::cout << "Faliu! Game over.\n";
+            std::cout << "\n\033[1;31m» GAME OVER! Sem moedas restantes.\033[0m\n";
             break;
         }
 
+        // Continuar jogando?
+        std::cout << "\n  ▶️  Continuar apostando? (s/n): ";
         char continuar;
-        std::cout << "\nContinuar apostando? (s/n): ";
         std::cin >> continuar;
+        Utils::clearInputBuffer();
 
-        if (continuar != 's' && continuar != 'S') {
-            std::cout << "Voce saiu com " << jogador.getSaldo() << " moedas!\n";
+        if (std::tolower(continuar) != 's') {
+            std::cout << "\n  Saldo final: \033[1;33m" << jogador.getSaldo() << " moedas\033[0m\n";
             break;
         }
-
-        // Limpar buffer de entrada
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
+    std::cout << "\n  Obrigado por jogar!\n";
     return 0;
 }

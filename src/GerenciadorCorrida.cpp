@@ -1,29 +1,33 @@
 #include "GerenciadorCorrida.hpp"
+#include "Utils.hpp"
 #include <thread>
 #include <chrono>
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include <cctype> // Para system("clear") no Linux/Mac
+#include <iomanip>
 
-constexpr int TEMPO_ESPERA = 500;
+constexpr int TEMPO_ESPERA = 300;
 
-void GerenciadorCorrida::adicionarCachorro(const Cachorro& cachorro) {
-    cachorros.push_back(cachorro);
+void GerenciadorCorrida::adicionarCachorro(Cachorro&& cachorro) {
+    cachorros.push_back(std::move(cachorro));
 }
 
 void GerenciadorCorrida::executar() {
     ordemChegada.clear();
+    ordemChegada.reserve(cachorros.size());
     int totalTerminados = 0;
     const int totalCachorros = cachorros.size();
 
-    while (totalTerminados < totalCachorros) {
-        #ifdef _WIN32
-        system("cls");
-        #else
-        system("clear");
-        #endif
+    // Calcular largura máxima dos nomes para alinhamento
+    std::vector<std::string> nomes;
+    for (const auto& c : cachorros) {
+        nomes.push_back(c.getNome());
+    }
+    size_t nameWidth = Utils::maxNameLength(nomes) + 2;
 
+    while (totalTerminados < totalCachorros) {
+        Utils::clearScreen();
         totalTerminados = 0;
 
         for (auto& cachorro : cachorros) {
@@ -32,15 +36,15 @@ void GerenciadorCorrida::executar() {
             }
 
             if (cachorro.venceu()) {
-                // Se ainda não está na lista de chegada, adiciona
-                int index = &cachorro - &cachorros[0];
+                const int index = &cachorro - &cachorros[0];
                 if (std::find(ordemChegada.begin(), ordemChegada.end(), index) == ordemChegada.end()) {
                     ordemChegada.push_back(index);
                 }
                 totalTerminados++;
             }
 
-            cachorro.imprimir();
+            // Passar a largura para alinhamento
+            cachorro.imprimir(nameWidth);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(TEMPO_ESPERA));

@@ -10,7 +10,7 @@ private:
     std::vector<int> ordemChegada;
 
 public:
-    void adicionarCachorro(const Cachorro& cachorro);
+    void adicionarCachorro(Cachorro&& cachorro);
     void executar();
     const std::vector<int>& getOrdemChegada() const;
     const std::vector<Cachorro>& getCachorros() const;

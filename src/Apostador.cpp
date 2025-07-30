@@ -1,53 +1,49 @@
-#include "../include/Apostador.hpp"
-#include <iostream>
+#include "Apostador.hpp"
 #include <algorithm>
+#include <iostream>
 
 Apostador::Apostador(int saldoInicial)
-    : saldo(saldoInicial), apostaValor(0), apostaAtiva(false) {}
+: saldo(saldoInicial), apostaValor(0),
+indiceCachorroApostado(-1), apostaAtiva(false) {}
 
-bool Apostador::apostar(int valor, const std::string& nomeCachorro) {
-    if (valor > saldo || valor <= 0) {
-        return false;
-    }
+bool Apostador::apostar(int valor, int indiceCachorro) {
+    if (valor <= 0 || valor > saldo) return false;
 
     apostaValor = valor;
-    cachorroApostado = nomeCachorro;
+    indiceCachorroApostado = indiceCachorro;
     apostaAtiva = true;
     saldo -= valor;
     return true;
 }
 
-void Apostador::processarResultado(const std::vector<int>& ordemChegada,
-                                  const std::vector<std::string>& nomesCachorros) {
+void Apostador::processarResultado(const std::vector<int>& ordemChegada) {
     if (!apostaAtiva) return;
 
     apostaAtiva = false;
-    int posicao = -1;
+    auto it = std::find(ordemChegada.begin(), ordemChegada.end(), indiceCachorroApostado);
 
-    // Encontrar a posição do cachorro apostado na ordem de chegada
-    for (int i = 0; i < ordemChegada.size(); i++) {
-        if (nomesCachorros[ordemChegada[i]] == cachorroApostado) {
-            posicao = i;
-            break;
-        }
+    if (it == ordemChegada.end()) {
+        std::cout << "Erro: Cachorro apostado não encontrado nos resultados!\n";
+        return;
     }
 
-    // Calcular prêmio baseado na posição
-    if (posicao == 0) {
-        saldo += apostaValor * 3; // 3x o valor apostado
-        std::cout << cachorroApostado << " ficou em 1o! Voce ganhou "
-                  << apostaValor * 3 << " moedas!\n";
-    } else if (posicao == 1) {
-        saldo += apostaValor * 2; // 2x o valor apostado
-        std::cout << cachorroApostado << " ficou em 2o! Voce ganhou "
-                  << apostaValor * 2 << " moedas!\n";
-    } else if (posicao == 2) {
-        saldo += apostaValor; // Devolve a aposta
-        std::cout << cachorroApostado << " ficou em 3o! Voce recebeu de volta "
-                  << apostaValor << " moedas.\n";
-    } else {
-        std::cout << cachorroApostado << " nao ficou no podium. Voce perdeu "
-                  << apostaValor << " moedas.\n";
+    const int posicao = std::distance(ordemChegada.begin(), it);
+
+    switch(posicao) {
+        case 0:
+            saldo += apostaValor * 3;
+            std::cout << "\n\033[1;32m» 1º lugar! Ganhou " << apostaValor * 3 << " moedas!\033[0m\n";
+            break;
+        case 1:
+            saldo += apostaValor * 2;
+            std::cout << "\n\033[1;33m» 2º lugar! Ganhou " << apostaValor * 2 << " moedas!\033[0m\n";
+            break;
+        case 2:
+            saldo += apostaValor;
+            std::cout << "\n\033[1;34m» 3º lugar! Recebeu de volta " << apostaValor << " moedas.\033[0m\n";
+            break;
+        default:
+            std::cout << "\n\033[1;31m» Fora do pódio! Perdeu " << apostaValor << " moedas.\033[0m\n";
     }
 }
 
@@ -61,4 +57,6 @@ bool Apostador::temApostaAtiva() const {
 
 void Apostador::resetAposta() {
     apostaAtiva = false;
+    indiceCachorroApostado = -1;
+    apostaValor = 0;
 }

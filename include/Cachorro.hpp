@@ -10,11 +10,11 @@ private:
     std::string nome;
 
 public:
-    Cachorro(char s, const std::string& n);
+    Cachorro(char s, std::string  n);
     void mover();
     bool venceu() const;
-    void imprimir() const;
-    std::string getNome() const;
+    void imprimir(size_t nameWidth) const;  // Adicionado parâmetro para largura
+    const std::string& getNome() const;
     int getPosicao() const;
     void reset();
 };
