@@ -4,17 +4,20 @@ OBJ_DIR := obj
 SRC_DIR := src
 TARGET := corrida_cachorros
 
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
-OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS)) $(OBJ_DIR)/main.o
+# Buscar todos os .cpp no src/ e main.cpp na raiz
+SRCS := $(wildcard $(SRC_DIR)/*.cpp) main.cpp
+OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(notdir $(SRCS)))
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
+# Regra genérica para compilar qualquer .cpp
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Regra específica para main.cpp (está na raiz)
 $(OBJ_DIR)/main.o: main.cpp | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
