@@ -62,4 +62,15 @@ make
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-jorgepaulo--santos-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/jorgepaulo-santos/)  
 ✉️ jorgepsan7@gmail.com
 
+## 💝 Suporte ao Projeto
+
+Se este projeto foi útil para você, considere apoiar meu trabalho através do GitHub Sponsors:
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-JP_Linux-ea4aaa?style=for-the-badge&logo=githubsponsors)](https://github.com/sponsors/JP-Linux)
+
 > Projeto desenvolvido e testado no ArchLinux
+
+
+## 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
